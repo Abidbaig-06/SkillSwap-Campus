@@ -118,7 +118,7 @@ export default function Navbar({
               }}
             >
               <img
-                src="/avatars/default_logo.svg"
+                src="./avatars/default_logo.svg"
                 alt="SkillSwap Campus Logo"
                 style={{ width: '22px', height: '22px' }}
               />

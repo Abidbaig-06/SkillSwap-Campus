@@ -29,7 +29,7 @@ export default function Settings({
   const [department, setDepartment] = useState(currentUser?.department || '');
   const [year, setYear] = useState(currentUser?.year || '1st Year');
   const [bio, setBio] = useState(currentUser?.bio || '');
-  const [avatar, setAvatar] = useState(currentUser?.avatar || '/avatars/default_avatar.svg');
+  const [avatar, setAvatar] = useState(currentUser?.avatar || './avatars/default_avatar.svg');
 
   // Account states
   const [notifyRequests, setNotifyRequests] = useState(true);
@@ -189,10 +189,10 @@ export default function Settings({
                       </div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {[
-                          { id: '/avatars/default_avatar.svg', label: 'Default Avatar Logo' },
-                          { id: '/avatars/default_logo.svg', label: 'SkillSwap Exchange Logo' },
-                          { id: '/avatars/lasya_bodapati.png', label: 'Campus Student' },
-                          { id: '/avatars/rahul.png', label: 'Rahul' }
+                          { id: './avatars/default_avatar.svg', label: 'Default Avatar Logo' },
+                          { id: './avatars/default_logo.svg', label: 'SkillSwap Exchange Logo' },
+                          { id: './avatars/lasya_bodapati.png', label: 'Campus Student' },
+                          { id: './avatars/rahul.png', label: 'Rahul' }
                         ].map((opt) => (
                           <button
                             key={opt.id}

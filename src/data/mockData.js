@@ -4,7 +4,7 @@ export const initialCurrentUser = {
   email: "aarav.sharma@campus.edu",
   department: "Computer Science & Engineering",
   year: "3rd Year",
-  avatar: "/avatars/default_avatar.svg",
+  avatar: "./avatars/default_avatar.svg",
   bio: "Full-stack developer passionate about React, modern JavaScript, and peer mentorship. Eager to exchange frontend knowledge for photography, video editing, and advanced DSA.",
   skillsTeaching: [
     { id: "st-1", name: "React", category: "Programming", level: "Advanced", endorsements: 16 },
@@ -35,7 +35,7 @@ export const mockStudents = [
     name: "Lasya Bodapati",
     department: "Computer Science & Engineering",
     year: "3rd Year",
-    avatar: "/avatars/lasya_bodapati.png",
+    avatar: "./avatars/lasya_bodapati.png",
     status: "online",
     rating: 4.9,
     matchPercent: 96,
@@ -219,7 +219,7 @@ export const mockStudents = [
     name: "Rahul",
     department: "Robotics & Automation",
     year: "3rd Year",
-    avatar: "/avatars/rahul.png",
+    avatar: "./avatars/rahul.png",
     status: "online",
     rating: 4.9,
     matchPercent: 93,
@@ -333,7 +333,7 @@ export const mockSkillsList = [
     description: "Scripting, algorithm implementation, data science essentials, and backend development with Python.",
     avatarList: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-      "/avatars/lasya_bodapati.png"
+      "./avatars/lasya_bodapati.png"
     ],
     tags: ["Programming", "Automation", "Data Science", "Backend"]
   },
@@ -347,7 +347,7 @@ export const mockSkillsList = [
     description: "Branching strategies, resolving merge conflicts, pull request reviews, and open-source collaboration.",
     avatarList: [
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80",
-      "/avatars/lasya_bodapati.png",
+      "./avatars/lasya_bodapati.png",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80"
     ],
     tags: ["DevOps", "Version Control", "Collaboration", "Open Source"]
@@ -415,7 +415,7 @@ export const mockSkillsList = [
     levelRange: "Advanced",
     description: "Semantic HTML5, CSS Grid, Flexbox, responsive layouts, media queries, and modern styling techniques.",
     avatarList: [
-      "/avatars/lasya_bodapati.png",
+      "./avatars/lasya_bodapati.png",
       "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format&fit=crop&q=80"
     ],
     tags: ["Frontend", "Web", "CSS Grid", "Responsive"]
@@ -501,7 +501,7 @@ export const mockSkillsList = [
     levelRange: "Advanced",
     description: "2D drafting, 3D modeling, technical orthographic drawings, dimensioning, and engineering blueprints.",
     avatarList: [
-      "/avatars/rahul.png"
+      "./avatars/rahul.png"
     ],
     tags: ["Engineering", "Drafting", "CAD", "Mechanical"]
   },
@@ -514,7 +514,7 @@ export const mockSkillsList = [
     levelRange: "Intermediate - Advanced",
     description: "Microcontrollers, motor drivers, sensor telemetry, autonomous rover navigation, and IoT prototyping.",
     avatarList: [
-      "/avatars/rahul.png"
+      "./avatars/rahul.png"
     ],
     tags: ["Robotics", "Hardware", "Arduino", "IoT", "Maker"]
   },
@@ -540,7 +540,7 @@ export const mockConnections = [
     name: "Lasya Bodapati",
     department: "Computer Science & Engineering",
     year: "3rd Year",
-    avatar: "/avatars/lasya_bodapati.png",
+    avatar: "./avatars/lasya_bodapati.png",
     sharedSkill: "React ⇄ HTML & CSS",
     type: "Teaching",
     status: "active",
@@ -648,8 +648,8 @@ export const mockConversations = [
     studentName: "Lasya Bodapati",
     peerId: 1,
     peerName: "Lasya Bodapati",
-    avatar: "/avatars/lasya_bodapati.png",
-    peerAvatar: "/avatars/lasya_bodapati.png",
+    avatar: "./avatars/lasya_bodapati.png",
+    peerAvatar: "./avatars/lasya_bodapati.png",
     status: "Online",
     peerStatus: "online",
     department: "Computer Science & Engineering • 3rd Year",
@@ -774,8 +774,8 @@ export const upcomingSessions = [
     id: "sess-1",
     partner: "Lasya Bodapati",
     peerName: "Lasya Bodapati",
-    avatar: "/avatars/lasya_bodapati.png",
-    peerAvatar: "/avatars/lasya_bodapati.png",
+    avatar: "./avatars/lasya_bodapati.png",
+    peerAvatar: "./avatars/lasya_bodapati.png",
     department: "Computer Science & Engineering",
     topic: "React State ⇄ CSS Grid Architecture",
     skill: "React State ⇄ CSS Grid Architecture",
@@ -851,10 +851,10 @@ export const campusActivityFeed = [
   {
     id: "act-1",
     user1: "Lasya Bodapati",
-    avatar1: "/avatars/lasya_bodapati.png",
+    avatar1: "./avatars/lasya_bodapati.png",
     action: "completed a 90-min skill swap with",
     user2: "Rahul",
-    avatar2: "/avatars/rahul.png",
+    avatar2: "./avatars/rahul.png",
     skill: "Robotics & CAD Prototyping",
     time: "2 hours ago",
     badge: "Verified Exchange",

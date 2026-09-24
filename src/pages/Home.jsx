@@ -257,7 +257,7 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
                 <img
-                  src="/avatars/rahul.png"
+                  src="./avatars/rahul.png"
                   alt="Rahul"
                   className="avatar"
                   style={{ width: '56px', height: '56px', objectFit: 'cover' }}
@@ -337,7 +337,7 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
                     name: 'Rahul',
                     department: 'Robotics & Automation',
                     year: '3rd Year',
-                    avatar: '/avatars/rahul.png',
+                    avatar: './avatars/rahul.png',
                     canTeach: [
                       { skill: 'Robotics & Arduino', name: 'Robotics & Arduino', level: 'Advanced' },
                       { skill: 'AutoCAD & 3D CAD', name: 'AutoCAD & 3D CAD', level: 'Advanced' },

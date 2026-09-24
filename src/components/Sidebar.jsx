@@ -96,7 +96,7 @@ export default function Sidebar({
             }}
           >
             <img
-              src="/avatars/default_logo.svg"
+              src="./avatars/default_logo.svg"
               alt="SkillSwap Campus Logo"
               style={{ width: '19px', height: '19px' }}
             />

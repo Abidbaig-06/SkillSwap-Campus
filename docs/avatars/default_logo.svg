@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="logoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181818"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Circle -->
+  <circle cx="64" cy="64" r="62" fill="url(#logoBgGrad)" stroke="rgba(255, 255, 255, 0.14)" stroke-width="2"/>
+
+  <!-- Minimalist Geometric SkillSwap Logo Icon -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top Right Node & Curved Reciprocal Path -->
+    <circle cx="82" cy="46" r="9" fill="#FFFFFF"/>
+    <path d="M 72 46 L 52 46 C 44 46 38 52 38 60 L 38 66"/>
+    <polyline points="33 60 38 67 43 60"/>
+
+    <!-- Bottom Left Node & Curved Reciprocal Path -->
+    <circle cx="46" cy="82" r="9" fill="#FFFFFF"/>
+    <path d="M 56 82 L 76 82 C 84 82 90 76 90 68 L 90 62"/>
+    <polyline points="95 68 90 61 85 68"/>
+  </g>
+</svg>
