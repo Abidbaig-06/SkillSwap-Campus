@@ -22,16 +22,19 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
   const [email, setEmail] = useState('');
   const [department, setDepartment] = useState('Computer Science & Engineering');
   const [year, setYear] = useState('1st Year');
-  const [selectedAvatar, setSelectedAvatar] = useState('./avatars/default_avatar.svg');
+  const BASE = import.meta.env.BASE_URL || '/';
+  const getAvatarPath = (file) => `${BASE.replace(/\/$/, '')}/avatars/${file}`;
 
   const sampleAvatars = [
-    './avatars/default_avatar.svg',
-    './avatars/default_logo.svg',
-    './avatars/lasya_bodapati.png',
-    './avatars/rahul.png',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+    getAvatarPath('avatar_1.svg'),
+    getAvatarPath('avatar_2.svg'),
+    getAvatarPath('avatar_3.svg'),
+    getAvatarPath('avatar_4.svg'),
+    getAvatarPath('avatar_5.svg'),
+    getAvatarPath('avatar_6.svg')
   ];
+
+  const [selectedAvatar, setSelectedAvatar] = useState(sampleAvatars[0]);
 
   // Step 2: Skills I Can Teach
   const [skillsTeach, setSkillsTeach] = useState([]);

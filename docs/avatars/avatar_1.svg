@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="av1_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#27272A"/>
+      <stop offset="100%" stop-color="#09090B"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="64" cy="64" r="62" fill="url(#av1_bg)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="2"/>
+  
+  <!-- Classic Clean Silhouette -->
+  <g fill="#F4F4F5">
+    <circle cx="64" cy="46" r="20"/>
+    <path d="M 28 104 C 28 82, 44 74, 64 74 C 84 74, 100 82, 100 104 C 100 108, 96 110, 92 110 L 36 110 C 32 110, 28 108, 28 104 Z"/>
+  </g>
+</svg>

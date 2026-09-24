@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="av6_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181B"/>
+      <stop offset="100%" stop-color="#27272A"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#av6_bg)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="2"/>
+  
+  <g fill="#FAFAFA">
+    <!-- Wavy Hair -->
+    <path d="M 40 40 C 38 24, 52 18, 64 18 C 76 18, 90 24, 88 40 C 92 48, 86 58, 84 62 C 86 52, 86 42, 84 36 C 80 28, 72 26, 64 26 C 54 26, 48 28, 44 36 C 42 42, 42 52, 44 62 C 42 58, 36 48, 40 40 Z"/>
+    <!-- Head -->
+    <circle cx="64" cy="48" r="18"/>
+    <!-- Torso -->
+    <path d="M 28 104 C 28 82, 44 74, 64 74 C 84 74, 100 82, 100 104 C 100 108, 96 110, 92 110 L 36 110 C 32 110, 28 108, 28 104 Z"/>
+  </g>
+  <!-- Skill Swap badge pin on chest -->
+  <circle cx="76" cy="90" r="5" fill="#FFFFFF" stroke="#18181B" stroke-width="1.5"/>
+</svg>

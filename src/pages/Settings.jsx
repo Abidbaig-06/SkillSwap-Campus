@@ -185,14 +185,16 @@ export default function Settings({
                     />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ fontSize: '0.78rem', color: '#666666' }}>
-                        Choose a default logo, avatar icon, or campus profile:
+                        Choose a default profile avatar:
                       </div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {[
-                          { id: './avatars/default_avatar.svg', label: 'Default Avatar Logo' },
-                          { id: './avatars/default_logo.svg', label: 'SkillSwap Exchange Logo' },
-                          { id: './avatars/lasya_bodapati.png', label: 'Campus Student' },
-                          { id: './avatars/rahul.png', label: 'Rahul' }
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_1.svg`, label: 'Classic' },
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_2.svg`, label: 'Glasses' },
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_3.svg`, label: 'Headphones' },
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_4.svg`, label: 'Creative' },
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_5.svg`, label: 'Campus Cap' },
+                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_6.svg`, label: 'Scholar' }
                         ].map((opt) => (
                           <button
                             key={opt.id}

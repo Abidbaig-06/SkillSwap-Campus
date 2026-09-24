@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="av3_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#312E81"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#av3_bg)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="2"/>
+  
+  <!-- Head & Body -->
+  <g fill="#F5F3FF">
+    <!-- Head -->
+    <circle cx="64" cy="48" r="19"/>
+    <!-- Hoodie Torso -->
+    <path d="M 28 104 C 28 82, 44 74, 64 74 C 84 74, 100 82, 100 104 C 100 108, 96 110, 92 110 L 36 110 C 32 110, 28 108, 28 104 Z"/>
+  </g>
+  <!-- Headphones Band -->
+  <path d="M 40 48 A 24 24 0 0 1 88 48" fill="none" stroke="#E0E7FF" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Headphone Earcups -->
+  <rect x="36" y="42" width="7" height="15" rx="3.5" fill="#E0E7FF"/>
+  <rect x="85" y="42" width="7" height="15" rx="3.5" fill="#E0E7FF"/>
+</svg>
