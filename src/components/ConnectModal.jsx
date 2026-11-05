@@ -83,7 +83,8 @@ export default function ConnectModal({ student, isOpen, onClose, onSendRequest, 
             }}
           >
             <img
-              src={student.avatar}
+              src={student.avatar || './avatars/default_avatar.svg'}
+              onError={(e) => { e.currentTarget.src = './avatars/default_avatar.svg'; }}
               alt={student.name}
               className="avatar"
               style={{ width: '46px', height: '46px' }}

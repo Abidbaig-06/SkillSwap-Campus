@@ -3,8 +3,8 @@ import SkillCard from '../components/SkillCard';
 import StudentCard from '../components/StudentCard';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
-import { BookOpen, Users } from 'lucide-react';
-import { mockSkillsList, mockStudents } from '../data/mockData';
+import { BookOpen, Users, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
+import { skillCategories } from '../data/mockData';
 
 export default function Discover({
   onSelectSkill,
@@ -13,47 +13,45 @@ export default function Discover({
   onOpenAddSkill,
   skills = [],
   students = [],
+  loading = false,
+  error = null,
+  onRetry = null,
   initialCategory = 'All',
-  initialMode = 'skills'
+  initialMode = 'skills',
+  initialSearch = ''
 }) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedLevel, setSelectedLevel] = useState('All');
   const [currentMode, setCurrentMode] = useState(null);
 
-  // Derive viewMode directly from prop or user selection
+  useEffect(() => {
+    if (initialSearch !== undefined) {
+      setSearchQuery(initialSearch || '');
+    }
+  }, [initialSearch]);
+
   const viewMode = currentMode || initialMode;
   const setViewMode = setCurrentMode;
 
-  const categories = [
-    'All',
-    'Programming',
-    'Design',
-    'Communication',
-    'Photography',
-    'Video',
-    'Business',
-    'Other'
-  ];
-
+  const categories = skillCategories;
   const levelOptions = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   // Filter skills
   const filteredSkills = useMemo(() => {
-    const list = skills.length > 0 ? skills : mockSkillsList;
-    return list.filter((skill) => {
+    return skills.filter((skill) => {
       const matchesCategory =
         selectedCategory === 'All' || skill.category === selectedCategory;
 
       const matchesSearch =
         searchQuery === '' ||
-        skill.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         skill.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesLevel =
         selectedLevel === 'All' ||
-        skill.levelRange.toLowerCase().includes(selectedLevel.toLowerCase());
+        skill.levelRange?.toLowerCase().includes(selectedLevel.toLowerCase());
 
       return matchesCategory && matchesSearch && matchesLevel;
     });
@@ -61,12 +59,11 @@ export default function Discover({
 
   // Filter students
   const filteredStudents = useMemo(() => {
-    const list = students.length > 0 ? students : mockStudents;
-    return list.filter((student) => {
+    return students.filter((student) => {
       const matchesSearch =
         searchQuery === '' ||
-        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.department?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.canTeach?.some((s) => {
           const sName = typeof s === 'string' ? s : (s.skill || s.name || '');
           return sName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -79,19 +76,23 @@ export default function Discover({
       const matchesCategory =
         selectedCategory === 'All' ||
         student.canTeach?.some((s) => {
+          const sCat = typeof s === 'object' && s.category ? s.category : '';
+          if (sCat && sCat === selectedCategory) return true;
           const sName = (typeof s === 'string' ? s : (s.skill || s.name || '')).toLowerCase();
-          if (selectedCategory === 'Programming') return sName.includes('react') || sName.includes('python') || sName.includes('c++') || sName.includes('dsa') || sName.includes('java') || sName.includes('sql') || sName.includes('git') || sName.includes('javascript') || sName.includes('html');
-          if (selectedCategory === 'Design') return sName.includes('design') || sName.includes('figma') || sName.includes('canva') || sName.includes('autocad') || sName.includes('3d') || sName.includes('graphic');
-          if (selectedCategory === 'Photography') return sName.includes('photo');
-          if (selectedCategory === 'Video') return sName.includes('video') || sName.includes('editing');
-          if (selectedCategory === 'Communication') return sName.includes('speaking') || sName.includes('communication') || sName.includes('presentation');
-          if (selectedCategory === 'Business') return sName.includes('financial') || sName.includes('pitch') || sName.includes('excel');
-          return true;
+          if (selectedCategory === 'Programming') return sName.includes('react') || sName.includes('python') || sName.includes('c++') || sName.includes('java') || sName.includes('git') || sName.includes('javascript') || sName.includes('sql') || sName.includes('web');
+          if (selectedCategory === 'Design') return sName.includes('design') || sName.includes('figma') || sName.includes('canva') || sName.includes('cad') || sName.includes('3d');
+          if (selectedCategory === 'Engineering') return sName.includes('cad') || sName.includes('printing') || sName.includes('matlab') || sName.includes('embedded') || sName.includes('iot');
+          if (selectedCategory === 'Business') return sName.includes('financial') || sName.includes('pitch') || sName.includes('model');
+          if (selectedCategory === 'Communication') return sName.includes('speaking') || sName.includes('presentation') || sName.includes('writing');
+          return false;
         });
 
       return matchesSearch && matchesCategory;
     });
   }, [selectedCategory, searchQuery, students]);
+
+  const realCount = filteredStudents.filter((s) => !s.isDemo).length;
+  const demoCount = filteredStudents.filter((s) => s.isDemo).length;
 
   return (
     <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '36px 24px 80px 24px' }}>
@@ -109,7 +110,7 @@ export default function Discover({
           Discover Skills
         </h1>
         <p style={{ fontSize: '1.05rem', color: '#6B6B6B' }}>
-          Find students who can teach what you want to learn.
+          Find students who can teach what you want to learn across all campus departments.
         </p>
       </div>
 
@@ -237,73 +238,140 @@ export default function Discover({
         </div>
       </div>
 
-      {/* Grid of Results */}
-      {viewMode === 'skills' ? (
-        filteredSkills.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666666' }}>
-            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111111' }}>
-              {searchQuery ? "No skills matched your search." : "No skills added to campus directory yet."}
-            </p>
-            <p style={{ fontSize: '0.875rem', marginTop: '4px' }}>
-              {searchQuery ? "Try selecting 'All' categories or changing your search terms." : "Be the first to share what you know with your campus community!"}
-            </p>
-            {onOpenAddSkill && (
-              <button
-                type="button"
-                onClick={onOpenAddSkill}
-                className="btn btn-primary btn-sm"
-                style={{ marginTop: '16px' }}
-              >
-                + Add First Skill
-              </button>
-            )}
+      {/* Error Banner */}
+      {error && (
+        <div
+          style={{
+            padding: '16px 20px',
+            backgroundColor: '#FEE2E2',
+            border: '1px solid #FCA5A5',
+            borderRadius: '16px',
+            color: '#991B1B',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '24px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertCircle size={18} />
+            <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{error}</span>
           </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '24px'
-            }}
-          >
-            {filteredSkills.map((skill) => (
-              <SkillCard
-                key={skill.id}
-                skill={skill}
-                onExplore={() => onSelectSkill(skill)}
-              />
-            ))}
-          </div>
-        )
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <RefreshCw size={12} />
+              Retry
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666666' }}>
+          <p style={{ fontSize: '1rem', fontWeight: 600 }}>Loading campus directory from MongoDB...</p>
+        </div>
       ) : (
-        /* Students view */
-        filteredStudents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666666' }}>
-            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111111' }}>
-              {searchQuery ? "No students matched your search criteria." : "No students registered on campus yet."}
-            </p>
-            <p style={{ fontSize: '0.875rem', marginTop: '4px' }}>
-              {searchQuery ? "Try searching for a different branch, skill, or name." : "Create your student profile to become the first pioneer on campus!"}
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '24px'
-            }}
-          >
-            {filteredStudents.map((student) => (
-              <StudentCard
-                key={student.id}
-                student={student}
-                onViewProfile={() => onSelectStudent(student)}
-                onConnect={() => onConnectStudent(student)}
-              />
-            ))}
-          </div>
-        )
+        <>
+          {/* Results Metadata Summary */}
+          {viewMode === 'students' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '20px',
+                fontSize: '0.825rem',
+                color: '#666666'
+              }}
+            >
+              <div>
+                Showing <strong>{filteredStudents.length}</strong> campus learning partners (
+                <strong>{realCount}</strong> registered peers, <strong>{demoCount}</strong> demo guides)
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#888888' }}>
+                Match scores derived from mutual skill synergy
+              </div>
+            </div>
+          )}
+
+          {/* Grid of Results */}
+          {viewMode === 'skills' ? (
+            filteredSkills.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666666' }}>
+                <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111111' }}>
+                  {searchQuery ? 'No skills matched your search.' : 'No skills in campus directory yet.'}
+                </p>
+                <p style={{ fontSize: '0.875rem', marginTop: '4px' }}>
+                  {searchQuery
+                    ? "Try selecting 'All' categories or changing your search terms."
+                    : 'Be the first to share what you know with your campus community!'}
+                </p>
+                {onOpenAddSkill && (
+                  <button
+                    type="button"
+                    onClick={onOpenAddSkill}
+                    className="btn btn-primary btn-sm"
+                    style={{ marginTop: '16px' }}
+                  >
+                    + Add a Skill
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: '24px'
+                }}
+              >
+                {filteredSkills.map((skill) => (
+                  <SkillCard
+                    key={skill.id}
+                    skill={skill}
+                    onViewSkill={() => onSelectSkill && onSelectSkill(skill)}
+                  />
+                ))}
+              </div>
+            )
+          ) : (
+            filteredStudents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666666' }}>
+                <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#111111' }}>
+                  {searchQuery ? 'No students found matching your criteria.' : 'No students found.'}
+                </p>
+                <p style={{ fontSize: '0.875rem', marginTop: '4px' }}>
+                  Try selecting 'All' categories or searching for a different skill or department.
+                </p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: '24px'
+                }}
+              >
+                {filteredStudents.map((student) => (
+                  <StudentCard
+                    key={student.id}
+                    student={student}
+                    onViewProfile={() => onSelectStudent && onSelectStudent(student)}
+                    onConnect={() => onConnectStudent && onConnectStudent(student)}
+                  />
+                ))}
+              </div>
+            )
+          )}
+        </>
       )}
     </div>
   );

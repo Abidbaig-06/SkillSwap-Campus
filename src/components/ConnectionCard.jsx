@@ -1,14 +1,16 @@
 import React from 'react';
 import GlassCard from './GlassCard';
-import { MessageSquare, ArrowUpRight, Check, X, Clock } from 'lucide-react';
+import { MessageSquare, ArrowUpRight, Check, X, Clock, Calendar } from 'lucide-react';
 
 export default function ConnectionCard({
   connection,
   onMessage,
   onViewProfile,
   onAccept,
-  onDecline
+  onDecline,
+  onSchedule
 }) {
+  const isDeleted = Boolean(connection.isDeleted || connection.name === 'Deleted student');
   const isPending = connection.status?.startsWith('pending');
   const isIncoming = connection.status === 'pending_incoming';
 
@@ -26,17 +28,18 @@ export default function ConnectionCard({
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <img
-              src={connection.avatar}
+              src={connection.avatar || './avatars/default_avatar.svg'}
               alt={connection.name}
               className="avatar"
-              style={{ width: '48px', height: '48px' }}
+              onError={(e) => { e.currentTarget.src = './avatars/default_avatar.svg'; }}
+              style={{ width: '48px', height: '48px', objectFit: 'cover' }}
             />
             <div>
               <h4 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#111111' }}>
                 {connection.name}
               </h4>
               <p style={{ fontSize: '0.8rem', color: '#6B6B6B', margin: '2px 0 0 0' }}>
-                {connection.department} • {connection.year}
+                {connection.department}{connection.year ? ` • ${connection.year}` : ''}
               </p>
             </div>
           </div>
@@ -47,15 +50,15 @@ export default function ConnectionCard({
               fontWeight: 600,
               padding: '3px 8px',
               borderRadius: '6px',
-              backgroundColor: isPending ? '#F2F2EE' : '#EFEFEA',
-              color: '#444444',
+              backgroundColor: isDeleted ? '#F3F4F6' : (isPending ? '#F2F2EE' : '#EFEFEA'),
+              color: isDeleted ? '#6B7280' : '#444444',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '4px'
             }}
           >
-            {isPending && <Clock size={11} />}
-            {connection.type}
+            {isDeleted ? 'Former Student' : (isPending && <Clock size={11} />)}
+            {!isDeleted && connection.type}
           </span>
         </div>
 
@@ -100,7 +103,17 @@ export default function ConnectionCard({
       </div>
 
       {/* Buttons */}
-      {isIncoming ? (
+      {isDeleted ? (
+        <button
+          type="button"
+          onClick={() => onMessage && onMessage(connection)}
+          className="btn btn-secondary btn-sm"
+          style={{ width: '100%' }}
+        >
+          <MessageSquare size={14} />
+          View Chat History
+        </button>
+      ) : isIncoming ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button
             type="button"
@@ -120,7 +133,7 @@ export default function ConnectionCard({
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: onSchedule ? '1fr 1fr 1fr' : '1fr 1fr', gap: '8px' }}>
           <button
             type="button"
             onClick={() => onMessage && onMessage(connection)}
@@ -129,12 +142,23 @@ export default function ConnectionCard({
             <MessageSquare size={14} />
             Message
           </button>
+          {onSchedule && (
+            <button
+              type="button"
+              onClick={() => onSchedule(connection)}
+              className="btn btn-secondary btn-sm"
+              title="Schedule Session"
+            >
+              <Calendar size={14} />
+              Schedule
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onViewProfile && onViewProfile(connection)}
             className="btn btn-secondary btn-sm"
           >
-            View Profile
+            Profile
             <ArrowUpRight size={14} />
           </button>
         </div>

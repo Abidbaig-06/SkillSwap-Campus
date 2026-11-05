@@ -10,15 +10,17 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Calendar
 } from 'lucide-react';
 
 export default function Sidebar({
   activePage,
   onNavigate,
   currentUser,
-  unreadMessagesCount = 1,
-  pendingConnectionsCount = 1,
+  unreadMessagesCount = 0,
+  pendingConnectionsCount = 0,
+  pendingSessionsCount = 0,
   onLogout
 }) {
   const menuItems = [
@@ -31,6 +33,12 @@ export default function Sidebar({
       label: 'Connections',
       icon: UserCheck,
       badge: pendingConnectionsCount > 0 ? pendingConnectionsCount : null
+    },
+    {
+      id: 'sessions',
+      label: 'Sessions',
+      icon: Calendar,
+      badge: pendingSessionsCount > 0 ? pendingSessionsCount : null
     },
     {
       id: 'messages',
@@ -232,9 +240,10 @@ export default function Sidebar({
           title="Go to student profile"
         >
           <img
-            src={currentUser.avatar}
-            alt={currentUser.name}
+            src={currentUser?.avatar || './avatars/default_avatar.svg'}
+            alt={currentUser?.name || 'Student avatar'}
             className="avatar"
+            onError={(e) => { e.currentTarget.src = './avatars/default_avatar.svg'; }}
             style={{ width: '38px', height: '38px', objectFit: 'cover' }}
           />
           <div style={{ flex: 1, minWidth: 0 }}>

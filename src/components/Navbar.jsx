@@ -216,7 +216,7 @@ export default function Navbar({
           }}
           className="desktop-nav"
         >
-          {isLoggedIn ? (
+          {isLoggedIn && currentUser && activePage !== 'login' && activePage !== 'signup' ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
                 type="button"
@@ -242,9 +242,10 @@ export default function Navbar({
                 title="View your student profile"
               >
                 <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
+                  src={currentUser?.avatar || './avatars/default_avatar.svg'}
+                  alt={currentUser?.name || 'User profile'}
                   className="avatar"
+                  onError={(e) => { e.currentTarget.src = './avatars/default_avatar.svg'; }}
                   style={{ width: '28px', height: '28px', objectFit: 'cover' }}
                 />
                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111111' }}>
@@ -254,21 +255,25 @@ export default function Navbar({
             </div>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={() => onNavigate('login')}
-                className="btn btn-ghost btn-sm"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigate('signup')}
-                className="btn btn-primary btn-sm"
-              >
-                Get Started
-                <ArrowRight size={14} />
-              </button>
+              {activePage !== 'login' && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('login')}
+                  className="btn btn-ghost btn-sm"
+                >
+                  Login
+                </button>
+              )}
+              {activePage !== 'signup' && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('signup')}
+                  className="btn btn-primary btn-sm"
+                >
+                  Get Started
+                  <ArrowRight size={14} />
+                </button>
+              )}
             </>
           )}
         </div>
@@ -340,7 +345,7 @@ export default function Navbar({
               gap: '10px'
             }}
           >
-            {isLoggedIn ? (
+            {isLoggedIn && currentUser && activePage !== 'login' && activePage !== 'signup' ? (
               <>
                 <button
                   type="button"
@@ -369,28 +374,32 @@ export default function Navbar({
               </>
             ) : (
               <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate('login');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="btn btn-secondary"
-                  style={{ width: '100%' }}
-                >
-                  Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate('signup');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="btn btn-primary"
-                  style={{ width: '100%' }}
-                >
-                  Get Started
-                </button>
+                {activePage !== 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onNavigate('login');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="btn btn-secondary"
+                    style={{ width: '100%' }}
+                  >
+                    Login
+                  </button>
+                )}
+                {activePage !== 'signup' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onNavigate('signup');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
+                  >
+                    Get Started
+                  </button>
+                )}
               </>
             )}
           </div>

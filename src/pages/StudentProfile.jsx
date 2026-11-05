@@ -69,26 +69,12 @@ export default function StudentProfile({
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ position: 'relative' }}>
               <img
-                src={student.avatar}
-                alt={student.name}
+                src={student.avatar || './avatars/default_avatar.svg'}
+                alt={student.name || 'Student profile'}
                 className="avatar"
-                style={{ width: '88px', height: '88px', border: '3px solid #FFFFFF' }}
+                onError={(e) => { e.currentTarget.src = './avatars/default_avatar.svg'; }}
+                style={{ width: '88px', height: '88px', border: '3px solid #FFFFFF', objectFit: 'cover' }}
               />
-              {student.status === 'online' && (
-                <span
-                  title="Online on campus"
-                  style={{
-                    position: 'absolute',
-                    bottom: '2px',
-                    right: '2px',
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    backgroundColor: '#111111',
-                    border: '3px solid #FFFFFF'
-                  }}
-                />
-              )}
             </div>
 
             <div>
@@ -96,11 +82,34 @@ export default function StudentProfile({
                 <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0, color: '#111111', letterSpacing: '-0.03em' }}>
                   {student.name || 'Campus Student'}
                 </h1>
-                <CheckCircle2 size={18} fill="#111111" color="#FFFFFF" />
+                {Boolean(student.isVerified || student.verified) && !student.isDemo && (
+                  <CheckCircle2 size={18} fill="#111111" color="#FFFFFF" title="Verified Campus Student" />
+                )}
               </div>
               <p style={{ fontSize: '0.95rem', color: '#666666', margin: '4px 0 8px 0', fontWeight: 500 }}>
                 {student.department ? `${student.department} • ` : ''}{student.year || 'Student'}
               </p>
+              {student.isDemo && (
+                <div style={{ marginBottom: '8px' }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                      color: '#111111',
+                      padding: '2px 8px',
+                      borderRadius: '6px'
+                    }}
+                  >
+                    Demo Guide
+                  </span>
+                </div>
+              )}
 
               {/* Rating */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -166,6 +175,269 @@ export default function StudentProfile({
             </p>
           </div>
         ) : null}
+      </GlassCard>
+
+      {/* Skill Compatibility & Match Breakdown Card */}
+      <GlassCard
+        style={{
+          padding: '28px 32px',
+          borderRadius: '20px',
+          marginBottom: '32px',
+          backgroundColor: '#FFFFFF',
+          border: '1px solid rgba(0, 0, 0, 0.08)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#111111' }}>
+                Skill Compatibility &amp; Match Breakdown
+              </h2>
+              {student.matchEvidence?.matchType === 'mutual' && (
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    backgroundColor: 'rgba(10, 92, 54, 0.12)',
+                    color: '#0A5C36',
+                    padding: '3px 10px',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  🤝 Mutual Swap
+                </span>
+              )}
+              {student.matchEvidence?.matchType === 'one_way' && (
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                    color: '#111111',
+                    padding: '3px 10px',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  🎯 One-Way Mentorship
+                </span>
+              )}
+              {student.matchEvidence?.matchType === 'department' && (
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    color: '#4B4B4B',
+                    padding: '3px 10px',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  🏛️ Same Department
+                </span>
+              )}
+              {student.matchEvidence?.matchType === 'no_overlap' && (
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    color: '#6B7280',
+                    padding: '3px 10px',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  🌐 Campus Discovery
+                </span>
+              )}
+              {(!student.matchEvidence || student.matchEvidence?.matchType === 'guest') && (
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                    color: '#374151',
+                    padding: '3px 10px',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  👋 Guest Platform Preview
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#666666', margin: '4px 0 0 0' }}>
+              Deterministic synergy analysis comparing your teaching and learning skills with {student.name}.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              backgroundColor: '#F8F9FA',
+              padding: '8px 16px',
+              borderRadius: '12px',
+              border: '1px solid #E5E7EB'
+            }}
+          >
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.7rem', color: '#6B7280', fontWeight: 600, textTransform: 'uppercase' }}>
+                Compatibility Score
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: (student.matchPercent || 0) >= 85 ? '#0A5C36' : '#111111', lineHeight: 1.1 }}>
+                {student.matchPercent ?? 50}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Guest explanation vs logged in breakdown */}
+        {(!student.matchEvidence || student.matchEvidence?.matchType === 'guest') ? (
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: '#F3F4F6',
+              borderRadius: '12px',
+              fontSize: '0.9rem',
+              color: '#374151'
+            }}
+          >
+            <p style={{ margin: 0, fontWeight: 500 }}>
+              You are currently viewing this student as a guest. <strong>Log in or create an account</strong> to view your personal reciprocal match score and see exactly which skills you can learn from {student.name} and teach in return.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '16px',
+              marginBottom: '20px'
+            }}
+          >
+            {/* What you can learn from them */}
+            <div
+              style={{
+                padding: '18px 20px',
+                borderRadius: '14px',
+                backgroundColor: student.theyCanTeachYou?.length > 0 ? '#F0FDF4' : '#F9FAFB',
+                border: student.theyCanTeachYou?.length > 0 ? '1px solid #BBF7D0' : '1px solid #E5E7EB'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '1.1rem' }}>🎓</span>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#111111' }}>
+                  What you can learn from {student.name}
+                </h3>
+              </div>
+              {student.theyCanTeachYou && student.theyCanTeachYou.length > 0 ? (
+                <div>
+                  <p style={{ fontSize: '0.82rem', color: '#166534', margin: '0 0 10px 0', fontWeight: 500 }}>
+                    Matches skills you want to learn:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {student.theyCanTeachYou.map((skill, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          backgroundColor: '#DCFCE7',
+                          color: '#14532D',
+                          border: '1px solid #86EFAC'
+                        }}
+                      >
+                        ✓ {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.82rem', color: '#6B7280', margin: 0, fontStyle: 'italic' }}>
+                  None of {student.name}&apos;s current teaching skills match your learning wishlist yet.
+                </p>
+              )}
+            </div>
+
+            {/* What you can teach them */}
+            <div
+              style={{
+                padding: '18px 20px',
+                borderRadius: '14px',
+                backgroundColor: student.youCanTeachThem?.length > 0 ? '#F0FDF4' : '#F9FAFB',
+                border: student.youCanTeachThem?.length > 0 ? '1px solid #BBF7D0' : '1px solid #E5E7EB'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '1.1rem' }}>💡</span>
+                <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#111111' }}>
+                  What you can teach {student.name}
+                </h3>
+              </div>
+              {student.youCanTeachThem && student.youCanTeachThem.length > 0 ? (
+                <div>
+                  <p style={{ fontSize: '0.82rem', color: '#166534', margin: '0 0 10px 0', fontWeight: 500 }}>
+                    Matches topics {student.name} wants to learn:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {student.youCanTeachThem.map((skill, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          backgroundColor: '#DCFCE7',
+                          color: '#14532D',
+                          border: '1px solid #86EFAC'
+                        }}
+                      >
+                        ★ {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.82rem', color: '#6B7280', margin: 0, fontStyle: 'italic' }}>
+                  {student.name} hasn&apos;t added learning goals matching your teaching skills yet.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Narrative / Formula Explanation Box */}
+        <div
+          style={{
+            backgroundColor: '#F8F9FA',
+            border: '1px solid #E5E7EB',
+            borderRadius: '12px',
+            padding: '14px 18px',
+            fontSize: '0.8rem',
+            color: '#4B4B4B',
+            lineHeight: 1.5
+          }}
+        >
+          <div style={{ fontWeight: 600, color: '#111111', marginBottom: '4px' }}>
+            {student.matchEvidence?.formulaExplanation || 'Calculated deterministically from verified catalog skills.'}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed #E2E8F0' }}>
+            ℹ️ <strong>Formula Transparency:</strong> 85–100% reciprocal mutual swap (base 85% + 5% per extra overlap), 65–80% one-way mentorship (base 65% + 5% per extra overlap), 55% academic department bonus, 45% campus discovery baseline (50% for guests). Match percentages reflect catalog skill compatibility and are not guaranteed learning outcomes.
+          </div>
+        </div>
       </GlassCard>
 
       {/* Grid: Skills I Can Teach & Skills I Want to Learn */}

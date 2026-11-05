@@ -9,7 +9,8 @@ export default function Connections({
   onDeclineConnection,
   onMessage,
   onViewProfile,
-  onNavigate
+  onNavigate,
+  onScheduleSession
 }) {
   const [activeTab, setActiveTab] = useState('All');
 
@@ -99,6 +100,7 @@ export default function Connections({
               onViewProfile={() => onViewProfile(conn)}
               onAccept={() => onAcceptConnection(conn.id)}
               onDecline={() => onDeclineConnection(conn.id)}
+              onSchedule={onScheduleSession ? () => onScheduleSession(conn) : undefined}
             />
           ))}
         </div>

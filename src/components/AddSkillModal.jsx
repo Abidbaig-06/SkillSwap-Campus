@@ -1,11 +1,26 @@
-import React, { useState } from 'react';
-import { X, Plus, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Plus } from 'lucide-react';
 
 export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType = 'teach' }) {
   const [skillType, setSkillType] = useState(initialType); // 'teach' | 'learn'
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Programming');
   const [level, setLevel] = useState('Intermediate');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Synchronize modal state whenever opened
+  useEffect(() => {
+    if (isOpen) {
+      const type = initialType || 'teach';
+      setSkillType(type);
+      setName('');
+      setCategory(type === 'learn' ? 'General' : 'Programming');
+      setLevel(type === 'learn' ? 'Beginner' : 'Intermediate');
+      setLoading(false);
+      setErrorMessage('');
+    }
+  }, [isOpen, initialType]);
 
   if (!isOpen) return null;
 
@@ -15,24 +30,42 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
     'Financial Modeling', 'Git & GitHub', 'Content Writing'
   ];
 
-  const handleSubmit = (e) => {
+  const handleTabChange = (type) => {
+    setSkillType(type);
+    if (errorMessage) setErrorMessage('');
+    if (type === 'teach' && level === 'Beginner') {
+      setLevel('Intermediate');
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setErrorMessage('Please enter a skill name.');
+      return;
+    }
 
-    onAddSkill({
-      type: skillType,
-      skill: {
-        id: `custom-${Date.now()}`,
-        name: name.trim(),
-        level,
-        category,
-        interestedCount: skillType === 'teach' ? 1 : undefined,
-        availableStudents: skillType === 'learn' ? 6 : undefined
-      }
-    });
+    setLoading(true);
+    setErrorMessage('');
 
-    setName('');
-    onClose();
+    try {
+      await onAddSkill({
+        type: skillType,
+        skill: {
+          name: trimmedName,
+          level,
+          category
+        }
+      });
+
+      setName('');
+      onClose();
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to add skill.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,7 +122,7 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
           >
             <button
               type="button"
-              onClick={() => setSkillType('teach')}
+              onClick={() => handleTabChange('teach')}
               style={{
                 border: 'none',
                 background: skillType === 'teach' ? '#FFFFFF' : 'transparent',
@@ -107,7 +140,7 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
             </button>
             <button
               type="button"
-              onClick={() => setSkillType('learn')}
+              onClick={() => handleTabChange('learn')}
               style={{
                 border: 'none',
                 background: skillType === 'learn' ? '#FFFFFF' : 'transparent',
@@ -128,6 +161,23 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
 
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ padding: '20px 28px 26px 28px' }}>
+          {errorMessage && (
+            <div
+              style={{
+                padding: '10px 14px',
+                backgroundColor: '#FEE2E2',
+                border: '1px solid #FCA5A5',
+                color: '#991B1B',
+                borderRadius: '10px',
+                fontSize: '0.825rem',
+                fontWeight: 500,
+                marginBottom: '16px'
+              }}
+            >
+              {errorMessage}
+            </div>
+          )}
+
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '6px' }}>
               Skill Name
@@ -236,6 +286,7 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             <button
               type="button"
+              disabled={loading}
               onClick={onClose}
               className="btn btn-ghost btn-sm"
             >
@@ -243,10 +294,12 @@ export default function AddSkillModal({ isOpen, onClose, onAddSkill, initialType
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="btn btn-primary"
+              style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
               <Plus size={15} />
-              Add Skill
+              {loading ? 'Adding Skill...' : 'Add Skill'}
             </button>
           </div>
         </form>

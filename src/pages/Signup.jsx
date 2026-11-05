@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import SkillChip from '../components/SkillChip';
+import ProfilePhotoPicker from '../components/ProfilePhotoPicker';
+import AvatarImage from '../components/AvatarImage';
 import {
   ArrowRight,
   ArrowLeft,
@@ -20,21 +22,12 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
   // Step 1: Basic Info
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [department, setDepartment] = useState('Computer Science & Engineering');
   const [year, setYear] = useState('1st Year');
-  const BASE = import.meta.env.BASE_URL || '/';
-  const getAvatarPath = (file) => `${BASE.replace(/\/$/, '')}/avatars/${file}`;
-
-  const sampleAvatars = [
-    getAvatarPath('avatar_1.svg'),
-    getAvatarPath('avatar_2.svg'),
-    getAvatarPath('avatar_3.svg'),
-    getAvatarPath('avatar_4.svg'),
-    getAvatarPath('avatar_5.svg'),
-    getAvatarPath('avatar_6.svg')
-  ];
-
-  const [selectedAvatar, setSelectedAvatar] = useState(sampleAvatars[0]);
+  const [photoData, setPhotoData] = useState(null);
 
   // Step 2: Skills I Can Teach
   const [skillsTeach, setSkillsTeach] = useState([]);
@@ -80,42 +73,41 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
     setSkillsLearn(skillsLearn.filter((_, idx) => idx !== index));
   };
 
-  const handleFinalSubmit = (e) => {
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
-    const newProfile = {
-      id: `user-${Date.now()}`,
-      name: fullName,
-      email,
-      department,
-      year,
-      avatar: selectedAvatar,
-      bio,
-      skillsTeaching: skillsTeach.map((s, i) => ({
-        id: `st-new-${i}`,
-        name: s.name,
-        level: s.level,
-        interestedCount: Math.floor(Math.random() * 15) + 3,
-        category: 'Programming'
-      })),
-      skillsLearning: skillsLearn.map((s, i) => ({
-        id: `sl-new-${i}`,
-        name: s.name,
-        level: s.level,
-        availableStudents: Math.floor(Math.random() * 20) + 5,
-        category: 'Design'
-      })),
-      stats: {
-        skillsTeachingCount: skillsTeach.length,
-        skillsLearningCount: skillsLearn.length,
-        connectionsCount: 0,
-        sessionsCount: 0,
-        reputation: 5.0,
-        reviewsCount: 0
-      }
-    };
+    setLoading(true);
+    setErrorMessage('');
 
-    onComplete(newProfile);
-    showToast(`Profile created successfully! Welcome to SkillSwap Campus, ${fullName.split(' ')[0]}.`);
+    try {
+      await onComplete({
+        fullName,
+        email,
+        password,
+        department,
+        year,
+        avatar: photoData || './avatars/default_avatar.svg',
+        photoData: photoData || null,
+        bio,
+        skillsTeaching: skillsTeach.map((s, i) => ({
+          id: `st-new-${i}`,
+          name: s.name,
+          level: s.level,
+          category: 'Programming'
+        })),
+        skillsLearning: skillsLearn.map((s, i) => ({
+          id: `sl-new-${i}`,
+          name: s.name,
+          level: s.level,
+          category: 'Design'
+        }))
+      });
+    } catch (err) {
+      const msg = err.message || 'Registration failed. Please try again.';
+      setErrorMessage(msg);
+      if (showToast) showToast(msg, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -256,6 +248,22 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.05)'
         }}
       >
+        {errorMessage && (
+          <div
+            style={{
+              padding: '12px 16px',
+              backgroundColor: '#FEE2E2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              borderRadius: '12px',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+              marginBottom: '22px'
+            }}
+          >
+            {errorMessage}
+          </div>
+        )}
         {/* STEP 1: Basic Information */}
         {step === 1 && (
           <div>
@@ -266,39 +274,13 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
               Your campus identity so classmates know who they are connecting with.
             </p>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '8px' }}>
-                Select Profile Photo
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <img
-                  src={selectedAvatar}
-                  alt="Selected avatar"
-                  className="avatar"
-                  style={{ width: '64px', height: '64px', border: '3px solid #000000' }}
-                />
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {sampleAvatars.map((url, i) => (
-                    <img
-                      key={i}
-                      src={url}
-                      alt={`Avatar option ${i + 1}`}
-                      onClick={() => setSelectedAvatar(url)}
-                      className="avatar"
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        cursor: 'pointer',
-                        opacity: selectedAvatar === url ? 1 : 0.6,
-                        border: selectedAvatar === url ? '2px solid #000000' : '1px solid rgba(0,0,0,0.1)',
-                        transform: selectedAvatar === url ? 'scale(1.08)' : 'scale(1)',
-                        transition: 'all 0.15s ease'
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Profile Photo Picker Section */}
+            <ProfilePhotoPicker
+              photo={photoData || './avatars/default_avatar.svg'}
+              onPhotoChange={(newPhoto) => setPhotoData(newPhoto)}
+              onPhotoRemove={() => setPhotoData(null)}
+              label="Profile Photo"
+            />
 
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '6px' }}>
@@ -331,8 +313,38 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errorMessage) setErrorMessage('');
+                }}
                 placeholder="student.name@campus.edu"
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0, 0, 0, 0.12)',
+                  backgroundColor: '#FFFFFF',
+                  fontFamily: 'inherit',
+                  fontSize: '0.9rem',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '6px' }}>
+                Password (min 6 characters)
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errorMessage) setErrorMessage('');
+                }}
+                placeholder="••••••••"
                 style={{
                   width: '100%',
                   padding: '11px 14px',
@@ -405,7 +417,22 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  if (!fullName.trim()) {
+                    setErrorMessage('Please enter your full name.');
+                    return;
+                  }
+                  if (!email.trim() || !email.includes('@')) {
+                    setErrorMessage('Please enter a valid college email address.');
+                    return;
+                  }
+                  if (!password || password.length < 6) {
+                    setErrorMessage('Password must be at least 6 characters long.');
+                    return;
+                  }
+                  setErrorMessage('');
+                  setStep(2);
+                }}
                 className="btn btn-primary"
                 style={{ padding: '12px 24px' }}
               >
@@ -758,11 +785,10 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <img
-                    src={selectedAvatar}
-                    alt={fullName}
-                    className="avatar"
-                    style={{ width: '48px', height: '48px' }}
+                  <AvatarImage
+                    src={photoData || './avatars/default_avatar.svg'}
+                    alt={fullName || 'Preview avatar'}
+                    size={48}
                   />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '1rem', color: '#111111' }}>
@@ -811,12 +837,13 @@ export default function Signup({ onComplete, onNavigate, showToast }) {
               </button>
               <button
                 type="button"
+                disabled={loading}
                 onClick={handleFinalSubmit}
                 className="btn btn-primary btn-lg"
-                style={{ fontWeight: 700 }}
+                style={{ fontWeight: 700, opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
               >
                 <Sparkles size={17} />
-                Create My Profile
+                {loading ? 'Creating Profile...' : 'Create My Profile'}
               </button>
             </div>
           </div>

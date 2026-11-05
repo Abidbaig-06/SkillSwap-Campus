@@ -16,11 +16,53 @@ import {
   TrendingUp,
   Award
 } from 'lucide-react';
-import { campusStats, mockSkillsList, mockStudents } from '../data/mockData';
 
-export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onConnectStudent }) {
-  const featuredSkills = mockSkillsList.slice(0, 4);
-  const spotlightStudents = mockStudents.slice(0, 3);
+export default function Home({
+  onNavigate,
+  onSelectSkill,
+  onSelectStudent,
+  onConnectStudent,
+  skills = [],
+  students = [],
+  campusStats = null
+}) {
+  const featuredSkills = (skills && skills.length > 0) ? skills.slice(0, 4) : [];
+  const spotlightStudents = (students && students.length > 0) ? students.slice(0, 3) : [];
+
+  const heroMentor = spotlightStudents[0] || {
+    id: 'demo-ram',
+    name: 'Ram',
+    department: 'Computer Science & Engineering',
+    year: '3rd Year',
+    avatar: './avatars/avatar_1.svg',
+    isDemo: true,
+    canTeach: [{ name: 'Python', level: 'Advanced' }, { name: 'React', level: 'Intermediate' }],
+    wantsToLearn: [{ name: 'Data Science', level: 'Beginner' }],
+    bio: 'Computer science undergrad passionate about peer mentorship and full-stack development.'
+  };
+
+  const displayStats = [
+    {
+      value: `${campusStats?.realStudentsCount ?? 0}`,
+      label: 'Registered Students',
+      change: 'Verified campus accounts'
+    },
+    {
+      value: `${campusStats?.demoStudentsCount ?? 0}`,
+      label: 'Guided Demo Mentors',
+      change: 'Isolated interactive guides'
+    },
+    {
+      value: `${campusStats?.skillsOfferedCount ?? (skills.length || 0)}`,
+      label: 'Skills Offered',
+      change: 'Peer-to-peer subjects'
+    },
+    {
+      value: `${campusStats?.departmentsCount ?? 0}`,
+      label: 'Academic Departments',
+      change: 'Active across campus'
+    }
+  ];
 
   return (
     <div style={{ width: '100%' }}>
@@ -241,7 +283,7 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
               }
             `}</style>
 
-            {/* Main Realistic Glassmorphic Student Interaction Card - Rahul (Featured Campus Innovator) */}
+            {/* Main Realistic Glassmorphic Student Interaction Card - Campus Peer Highlight */}
             <div
               style={{
                 width: '100%',
@@ -257,15 +299,15 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
                 <img
-                  src="./avatars/rahul.png"
-                  alt="Rahul"
+                  src={heroMentor.avatar || './avatars/avatar_1.svg'}
+                  alt={heroMentor.name}
                   className="avatar"
                   style={{ width: '56px', height: '56px', objectFit: 'cover' }}
                 />
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: '#111111' }}>
-                      Rahul
+                      {heroMentor.name}
                     </h3>
                     <span
                       style={{
@@ -278,11 +320,11 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
                         letterSpacing: '0.04em'
                       }}
                     >
-                      Maker Lab Lead
+                      {heroMentor.isDemo ? 'Demo Guide' : 'Student Peer'}
                     </span>
                   </div>
                   <p style={{ fontSize: '0.85rem', color: '#666666', margin: '3px 0 0 0' }}>
-                    Robotics & Automation • 3rd Year
+                    {heroMentor.department || 'Campus Department'} • {heroMentor.year || 'Student'}
                   </p>
                 </div>
               </div>
@@ -302,9 +344,14 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
                   Teaches
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  <SkillChip name="Robotics & Arduino" level="Advanced" size="sm" />
-                  <SkillChip name="AutoCAD & 3D CAD" level="Advanced" size="sm" />
-                  <SkillChip name="Drone Tech" level="Intermediate" size="sm" />
+                  {(heroMentor.canTeach || []).map((t, idx) => (
+                    <SkillChip
+                      key={idx}
+                      name={typeof t === 'string' ? t : (t.skill || t.name)}
+                      level={typeof t === 'object' ? (t.level || 'Intermediate') : 'Intermediate'}
+                      size="sm"
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -323,8 +370,14 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
                   Wants to Learn
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  <SkillChip name="Python for AI" variant="outline" size="sm" />
-                  <SkillChip name="Web Development" variant="outline" size="sm" />
+                  {(heroMentor.wantsToLearn || []).map((l, idx) => (
+                    <SkillChip
+                      key={idx}
+                      name={typeof l === 'string' ? l : (l.skill || l.name)}
+                      variant="outline"
+                      size="sm"
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -332,20 +385,7 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
               <button
                 type="button"
                 onClick={() => {
-                  onConnectStudent({
-                    id: 9,
-                    name: 'Rahul',
-                    department: 'Robotics & Automation',
-                    year: '3rd Year',
-                    avatar: './avatars/rahul.png',
-                    canTeach: [
-                      { skill: 'Robotics & Arduino', name: 'Robotics & Arduino', level: 'Advanced' },
-                      { skill: 'AutoCAD & 3D CAD', name: 'AutoCAD & 3D CAD', level: 'Advanced' },
-                      { skill: 'Drone Tech', name: 'Drone Tech', level: 'Intermediate' }
-                    ],
-                    wantsToLearn: ['Python for AI', 'Web Development'],
-                    bio: 'Building autonomous campus rovers and 3D drone hardware in the maker lab. Looking to exchange robotics and 3D CAD insights for Python AI and web development.'
-                  });
+                  onConnectStudent(heroMentor);
                 }}
                 className="btn btn-primary"
                 style={{ width: '100%', padding: '12px' }}
@@ -375,7 +415,7 @@ export default function Home({ onNavigate, onSelectSkill, onSelectStudent, onCon
             gap: '28px'
           }}
         >
-          {campusStats.map((item, idx) => (
+          {displayStats.map((item, idx) => (
             <div key={idx} style={{ padding: '8px 12px' }}>
               <div style={{ fontSize: '2.1rem', fontWeight: 800, color: '#000000', letterSpacing: '-0.03em' }}>
                 {item.value}

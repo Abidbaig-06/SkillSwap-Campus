@@ -1,42 +1,34 @@
 import React, { useState, useMemo } from 'react';
 import GlassCard from '../components/GlassCard';
 import StudentCard from '../components/StudentCard';
-import SkillChip from '../components/SkillChip';
-import { ArrowLeft, Users, Star, Sparkles, Filter } from 'lucide-react';
-import { mockStudents } from '../data/mockData';
+import { ArrowLeft, Users, Filter } from 'lucide-react';
 
 export default function SkillDetails({
   skill,
+  students = [],
   onBack,
   onSelectStudent,
   onConnectStudent
 }) {
   const [levelFilter, setLevelFilter] = useState('All');
 
-  // Filter students who teach this skill
+  // Filter students who teach this skill from real MongoDB student list
   const instructors = useMemo(() => {
     if (!skill) return [];
-    const skillKeyword = skill.slug || skill.title.toLowerCase();
+    const skillKeyword = (skill.slug || skill.title || '').toLowerCase().trim();
 
-    return mockStudents.filter((student) => {
-      const teachesSkill = student.canTeach.some((s) => {
-        const name = (typeof s === 'string' ? s : s.name).toLowerCase();
-        if (skillKeyword === 'react') return name.includes('react') || name.includes('javascript') || name.includes('frontend');
-        if (skillKeyword === 'python') return name.includes('python') || name.includes('learning') || name.includes('data');
-        if (skillKeyword === 'ui-ux') return name.includes('design') || name.includes('figma') || name.includes('ui');
-        if (skillKeyword === 'photography') return name.includes('photography') || name.includes('lightroom');
-        if (skillKeyword === 'video-editing') return name.includes('video') || name.includes('premiere');
-        if (skillKeyword === 'public-speaking') return name.includes('speaking') || name.includes('debate');
-        if (skillKeyword === 'financial-modeling') return name.includes('financial') || name.includes('excel');
-        return name.includes(skillKeyword);
+    return students.filter((student) => {
+      const teachesSkill = student.canTeach?.some((s) => {
+        const name = (typeof s === 'string' ? s : (s.skill || s.name || '')).toLowerCase().trim();
+        return name === skillKeyword || name.includes(skillKeyword) || skillKeyword.includes(name);
       });
 
       if (!teachesSkill) return false;
 
       if (levelFilter !== 'All') {
         const matchingSkillObj = student.canTeach.find((s) => {
-          const name = (typeof s === 'string' ? s : s.name).toLowerCase();
-          return name.includes(skillKeyword) || name.includes('react') || name.includes('python');
+          const name = (typeof s === 'string' ? s : (s.skill || s.name || '')).toLowerCase().trim();
+          return name === skillKeyword || name.includes(skillKeyword) || skillKeyword.includes(name);
         });
         if (matchingSkillObj && typeof matchingSkillObj === 'object') {
           return matchingSkillObj.level === levelFilter;
@@ -45,13 +37,13 @@ export default function SkillDetails({
 
       return true;
     });
-  }, [skill, levelFilter]);
+  }, [skill, levelFilter, students]);
 
   if (!skill) {
     return (
-      <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-        <p>No skill selected.</p>
-        <button type="button" onClick={onBack} className="btn btn-secondary">
+      <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+        <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>No skill selected.</p>
+        <button type="button" onClick={onBack} className="btn btn-secondary" style={{ marginTop: '14px' }}>
           Go back to Discover
         </button>
       </div>
@@ -93,10 +85,10 @@ export default function SkillDetails({
               borderRadius: '6px'
             }}
           >
-            {skill.category}
+            {skill.category || 'Programming'}
           </span>
           <span style={{ fontSize: '0.85rem', color: '#6B6B6B' }}>
-            Campus Curriculum Verified
+            Campus Peer Directory
           </span>
         </div>
 
@@ -105,138 +97,104 @@ export default function SkillDetails({
             fontSize: 'clamp(2rem, 3.5vw, 2.8rem)',
             fontWeight: 800,
             letterSpacing: '-0.035em',
-            color: '#111111',
-            marginBottom: '8px'
+            margin: '0 0 16px 0',
+            color: '#111111'
           }}
         >
           {skill.title}
         </h1>
 
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '1rem',
-            fontWeight: 700,
-            color: '#111111',
-            marginBottom: '16px'
-          }}
-        >
-          <Users size={16} />
-          {skill.teacherCount} students can teach this skill
-        </div>
-
-        <p style={{ fontSize: '1.05rem', color: '#4B4B4B', lineHeight: 1.6, maxWidth: '780px', marginBottom: '24px' }}>
-          {skill.description}
+        <p style={{ fontSize: '1.05rem', color: '#555555', maxWidth: '720px', lineHeight: 1.6, margin: '0 0 24px 0' }}>
+          {skill.description || `Connect with fellow students teaching ${skill.title} across campus departments.`}
         </p>
 
-        {/* Tags */}
-        {skill.tags && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {skill.tags.map((tag) => (
-              <span
-                key={tag}
-                style={{
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                  color: '#333333',
-                  padding: '4px 10px',
-                  borderRadius: '9999px',
-                  border: '1px solid rgba(0, 0, 0, 0.06)'
-                }}
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </GlassCard>
-
-      {/* Section: Students Teaching This Skill */}
-      <div style={{ marginBottom: '24px' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-            marginBottom: '20px'
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em', color: '#111111' }}>
-              Students Teaching {skill.title}
-            </h2>
-            <p style={{ fontSize: '0.875rem', color: '#666666', marginTop: '2px' }}>
-              Connect with experienced peers for 1-on-1 walkthroughs and lab support.
-            </p>
-          </div>
-
-          {/* Level Filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#777777', fontWeight: 600 }}>
-              Skill level:
+            <Users size={16} color="#666666" />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111111' }}>
+              {instructors.length} active {instructors.length === 1 ? 'mentor' : 'mentors'}
             </span>
-            {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
-              <button
-                key={lvl}
-                type="button"
-                onClick={() => setLevelFilter(lvl)}
-                style={{
-                  border: 'none',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.78rem',
-                  fontWeight: levelFilter === lvl ? 700 : 500,
-                  backgroundColor: levelFilter === lvl ? '#111111' : 'rgba(0, 0, 0, 0.04)',
-                  color: levelFilter === lvl ? '#FFFFFF' : '#555555',
-                  cursor: 'pointer'
-                }}
-              >
-                {lvl}
-              </button>
-            ))}
+          </div>
+          <div style={{ fontSize: '0.9rem', color: '#666666' }}>
+            Level Range: <strong>{skill.levelRange || 'All levels'}</strong>
           </div>
         </div>
+      </GlassCard>
 
-        {/* Instructors Grid */}
-        {instructors.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#666666' }}>
-            <p style={{ fontSize: '1.05rem', fontWeight: 600 }}>
-              No students found at the "{levelFilter}" level.
-            </p>
+      {/* Instructors Section Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '16px',
+          marginBottom: '24px'
+        }}
+      >
+        <div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#111111', letterSpacing: '-0.02em' }}>
+            Campus Mentors Teaching {skill.title} ({instructors.length})
+          </h2>
+          <p style={{ fontSize: '0.85rem', color: '#666666', margin: '4px 0 0 0' }}>
+            Students offering to exchange their mastery in this discipline.
+          </p>
+        </div>
+
+        {/* Level Filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Filter size={14} color="#666666" />
+          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#666666' }}>Proficiency:</span>
+          {['All', 'Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
             <button
+              key={lvl}
               type="button"
-              onClick={() => setLevelFilter('All')}
-              className="btn btn-secondary btn-sm"
-              style={{ marginTop: '14px' }}
+              onClick={() => setLevelFilter(lvl)}
+              style={{
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                fontWeight: levelFilter === lvl ? 700 : 500,
+                backgroundColor: levelFilter === lvl ? '#111111' : 'rgba(0, 0, 0, 0.04)',
+                color: levelFilter === lvl ? '#FFFFFF' : '#555555',
+                cursor: 'pointer'
+              }}
             >
-              Show all skill levels
+              {lvl}
             </button>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '24px'
-            }}
-          >
-            {instructors.map((student) => (
-              <StudentCard
-                key={student.id}
-                student={student}
-                onViewProfile={() => onSelectStudent(student)}
-                onConnect={() => onConnectStudent(student)}
-                showMatch={false}
-              />
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
+
+      {/* Instructors Grid */}
+      {instructors.length === 0 ? (
+        <GlassCard style={{ padding: '60px 20px', textAlign: 'center', color: '#666666' }}>
+          <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111111', margin: '0 0 6px 0' }}>
+            No mentors found for "{skill.title}" at "{levelFilter}" level.
+          </p>
+          <p style={{ fontSize: '0.875rem', margin: 0 }}>
+            Try switching to 'All' levels or check back as more students join campus.
+          </p>
+        </GlassCard>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '24px'
+          }}
+        >
+          {instructors.map((student) => (
+            <StudentCard
+              key={student.id}
+              student={student}
+              onViewProfile={() => onSelectStudent && onSelectStudent(student)}
+              onConnect={() => onConnectStudent && onConnectStudent(student)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

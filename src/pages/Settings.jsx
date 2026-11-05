@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GlassCard from '../components/GlassCard';
 import SkillChip from '../components/SkillChip';
+import ProfilePhotoPicker from '../components/ProfilePhotoPicker';
 import {
   User,
   Shield,
@@ -11,17 +12,27 @@ import {
   Lock,
   Plus,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 
 export default function Settings({
   currentUser,
   onUpdateProfile,
+  onDeleteAccount,
   onOpenAddSkill,
   onNavigate,
   showToast
 }) {
   const [activeSection, setActiveSection] = useState('personal'); // personal | skills | account | danger
+
+  // Delete modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const isDemoUser = Boolean(currentUser?.isDemo || currentUser?.is_demo);
 
   // Form states
   const [name, setName] = useState(currentUser?.name || '');
@@ -30,6 +41,21 @@ export default function Settings({
   const [year, setYear] = useState(currentUser?.year || '1st Year');
   const [bio, setBio] = useState(currentUser?.bio || '');
   const [avatar, setAvatar] = useState(currentUser?.avatar || './avatars/default_avatar.svg');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Synchronize local form inputs whenever currentUser updates from the backend
+  useEffect(() => {
+    if (currentUser) {
+      setName(currentUser.name || '');
+      setEmail(currentUser.email || '');
+      setDepartment(currentUser.department || '');
+      setYear(currentUser.year || '1st Year');
+      setBio(currentUser.bio || '');
+      setAvatar(currentUser.avatar || './avatars/default_avatar.svg');
+    }
+  }, [currentUser]);
 
   // Account states
   const [notifyRequests, setNotifyRequests] = useState(true);
@@ -38,17 +64,29 @@ export default function Settings({
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  const handleSavePersonal = (e) => {
+  const handleSavePersonal = async (e) => {
     e.preventDefault();
-    onUpdateProfile({
-      name,
-      email,
-      department,
-      year,
-      bio,
-      avatar
-    });
-    showToast('Personal information updated successfully.');
+    setLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      await onUpdateProfile({
+        name,
+        department,
+        year,
+        bio,
+        avatar
+      });
+      setSuccessMessage('Profile information updated successfully.');
+      showToast('Personal information updated successfully.');
+    } catch (err) {
+      const msg = err.message || 'Failed to update profile.';
+      setErrorMessage(msg);
+      showToast(msg, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveAccount = (e) => {
@@ -62,10 +100,32 @@ export default function Settings({
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your campus profile? This cannot be undone.')) {
-      showToast('Account scheduled for deactivation.');
-      onNavigate('home');
+  const handleDeleteAccountClick = () => {
+    if (isDemoUser) {
+      showToast('Demo accounts cannot be deleted to preserve the campus walkthrough.', 'error');
+      return;
+    }
+    setDeleteConfirmationInput('');
+    setDeleteError('');
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmationInput.trim() !== 'DELETE') {
+      setDeleteError('Please type "DELETE" exactly to confirm.');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      if (onDeleteAccount) {
+        await onDeleteAccount();
+      }
+      setShowDeleteModal(false);
+    } catch (err) {
+      setDeleteError(err.message || 'Failed to delete account. Please try again.');
+      setIsDeleting(false);
     }
   };
 
@@ -163,70 +223,50 @@ export default function Settings({
                 </p>
               </div>
 
-              <form onSubmit={handleSavePersonal}>
-                {/* Profile Picture / Avatar Logo Selector */}
-                <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '8px' }}>
-                    Profile Picture / Avatar Logo
-                  </label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                    <img
-                      src={avatar}
-                      alt={name}
-                      style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: '2px solid #111111',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        backgroundColor: '#F5F5F3'
-                      }}
-                    />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#666666' }}>
-                        Choose a default profile avatar:
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {[
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_1.svg`, label: 'Classic' },
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_2.svg`, label: 'Glasses' },
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_3.svg`, label: 'Headphones' },
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_4.svg`, label: 'Creative' },
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_5.svg`, label: 'Campus Cap' },
-                          { id: `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/avatars/avatar_6.svg`, label: 'Scholar' }
-                        ].map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => setAvatar(opt.id)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '6px 12px',
-                              borderRadius: '999px',
-                              border: avatar === opt.id ? '2px solid #111111' : '1px solid rgba(0,0,0,0.12)',
-                              backgroundColor: avatar === opt.id ? 'rgba(0,0,0,0.06)' : '#FFFFFF',
-                              color: '#111111',
-                              cursor: 'pointer',
-                              fontSize: '0.78rem',
-                              fontWeight: avatar === opt.id ? 700 : 500,
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <img
-                              src={opt.id}
-                              alt={opt.label}
-                              style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }}
-                            />
-                            <span>{opt.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+              {errorMessage && (
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#FEE2E2',
+                    border: '1px solid #FCA5A5',
+                    color: '#991B1B',
+                    borderRadius: '12px',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    marginBottom: '20px'
+                  }}
+                >
+                  {errorMessage}
                 </div>
+              )}
+
+              {successMessage && (
+                <div
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#ECFDF5',
+                    border: '1px solid #A7F3D0',
+                    color: '#065F46',
+                    borderRadius: '12px',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    marginBottom: '20px'
+                  }}
+                >
+                  {successMessage}
+                </div>
+              )}
+
+              <form onSubmit={handleSavePersonal}>
+                {/* Profile Photo Picker Section */}
+                <ProfilePhotoPicker
+                  photo={avatar}
+                  onPhotoChange={(newPhoto) => setAvatar(newPhoto)}
+                  onPhotoRemove={() => setAvatar('./avatars/default_avatar.svg')}
+                  disabled={loading}
+                  isDemo={Boolean(currentUser?.isDemo)}
+                  label="Profile Picture / Custom Photo"
+                />
 
                 <div style={{ marginBottom: '18px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#222222', marginBottom: '6px' }}>
@@ -257,23 +297,23 @@ export default function Settings({
                   </label>
                   <input
                     type="email"
-                    placeholder="e.g. yourname@campus.edu"
+                    readOnly
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     style={{
                       width: '100%',
                       padding: '11px 14px',
                       borderRadius: '12px',
                       border: '1px solid rgba(0, 0, 0, 0.12)',
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: '#F7F7F5',
                       fontFamily: 'inherit',
                       fontSize: '0.9rem',
-                      color: '#111111',
+                      color: '#666666',
+                      cursor: 'not-allowed',
                       outline: 'none'
                     }}
                   />
                   <span style={{ fontSize: '0.72rem', color: '#888888', marginTop: '4px', display: 'block' }}>
-                    Used for receiving campus match updates and connection requests.
+                    College domain email is fixed to your campus account and verified at registration.
                   </span>
                 </div>
 
@@ -352,9 +392,14 @@ export default function Settings({
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-primary"
+                    style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+                  >
                     <Save size={15} />
-                    Save Changes
+                    {loading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>
@@ -549,20 +594,193 @@ export default function Settings({
                   Danger Zone
                 </h2>
               </div>
-              <p style={{ fontSize: '0.875rem', color: '#666666', lineHeight: 1.5, marginBottom: '24px' }}>
-                Deleting your account permanently removes your teaching listings, ratings, reviews, and active conversation logs.
+              <p style={{ fontSize: '0.875rem', color: '#666666', lineHeight: 1.5, marginBottom: '20px' }}>
+                Permanently delete your student profile, custom avatar, teaching skills, and learning goals from the campus database.
               </p>
+
+              {isDemoUser ? (
+                <div
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: '#FEF2F2',
+                    border: '1px solid #FCA5A5',
+                    color: '#991B1B',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.45,
+                    marginBottom: '16px'
+                  }}
+                >
+                  <strong>Demo account protected:</strong> The shared demo student profile cannot be deleted to preserve the campus walkthrough.
+                </div>
+              ) : null}
 
               <button
                 type="button"
-                onClick={handleDeleteAccount}
+                onClick={handleDeleteAccountClick}
+                disabled={isDemoUser}
                 className="btn btn-primary"
-                style={{ backgroundColor: '#C92A2A', borderColor: '#C92A2A', color: '#FFFFFF' }}
+                style={{
+                  backgroundColor: isDemoUser ? '#E5E7EB' : '#C92A2A',
+                  borderColor: isDemoUser ? '#E5E7EB' : '#C92A2A',
+                  color: isDemoUser ? '#9CA3AF' : '#FFFFFF',
+                  cursor: isDemoUser ? 'not-allowed' : 'pointer'
+                }}
               >
                 <Trash2 size={16} />
                 Delete Campus Profile
               </button>
             </GlassCard>
+          )}
+
+          {/* Account Deletion Confirmation Modal */}
+          {showDeleteModal && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                backdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+                zIndex: 1000
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '20px',
+                  maxWidth: '480px',
+                  width: '100%',
+                  padding: '28px',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+                  border: '1px solid rgba(201, 42, 42, 0.3)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        backgroundColor: '#FEF2F2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#DC2626'
+                      }}
+                    >
+                      <AlertTriangle size={20} />
+                    </div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#111111' }}>
+                      Delete Campus Profile
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isDeleting) {
+                        setShowDeleteModal(false);
+                        setDeleteError('');
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: isDeleting ? 'not-allowed' : 'pointer',
+                      color: '#666666',
+                      padding: '4px'
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.875rem', color: '#4B5563', lineHeight: 1.5, marginBottom: '20px' }}>
+                  <p style={{ marginTop: 0, marginBottom: '12px', fontWeight: 600, color: '#DC2626' }}>
+                    Warning: This action is permanent and cannot be undone.
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>Your account, profile info, and uploaded photos will be permanently removed.</li>
+                    <li>Pending connection requests will be cancelled immediately.</li>
+                    <li>Shared conversations and learning sessions will be preserved for your peers, displaying your name as "Deleted student".</li>
+                    <li>All active sessions on all devices will be terminated.</li>
+                  </ul>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                    Type <strong style={{ color: '#DC2626' }}>DELETE</strong> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmationInput}
+                    onChange={(e) => setDeleteConfirmationInput(e.target.value)}
+                    placeholder="DELETE"
+                    disabled={isDeleting}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(0, 0, 0, 0.15)',
+                      fontSize: '0.9rem',
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.05em'
+                    }}
+                  />
+                </div>
+
+                {deleteError && (
+                  <div
+                    style={{
+                      marginBottom: '16px',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      backgroundColor: '#FEF2F2',
+                      border: '1px solid #FCA5A5',
+                      color: '#991B1B',
+                      fontSize: '0.82rem'
+                    }}
+                  >
+                    {deleteError}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setDeleteError('');
+                    }}
+                    disabled={isDeleting}
+                    className="btn btn-outline btn-sm"
+                    style={{ padding: '9px 16px' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting || deleteConfirmationInput.trim() !== 'DELETE'}
+                    className="btn btn-primary btn-sm"
+                    style={{
+                      padding: '9px 16px',
+                      backgroundColor: '#DC2626',
+                      borderColor: '#DC2626',
+                      color: '#FFFFFF',
+                      opacity: deleteConfirmationInput.trim() === 'DELETE' && !isDeleting ? 1 : 0.6,
+                      cursor: deleteConfirmationInput.trim() === 'DELETE' && !isDeleting ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    {isDeleting ? 'Deleting Account...' : 'Permanently Delete'}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
