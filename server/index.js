@@ -1,4 +1,7 @@
 import http from 'node:http';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
@@ -21,8 +24,15 @@ import { initSocket } from './socket.js';
 // Validate configuration
 validateConfig();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, '..', 'dist');
+
 const app = express();
 const server = http.createServer(app);
+
+// Trust Render reverse proxy before session middleware (enables secure HTTPS cookies over Render's proxy)
+app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -74,8 +84,11 @@ app.use(
 // Initialize Socket.IO with session store authentication
 const io = initSocket(server, sessionStore);
 
+// Unified API Router mounted at both /api and /SkillSwap-Campus/api
+const apiRouter = express.Router();
+
 // Health check endpoint (always accessible, reports live connection status and database name)
-app.get('/api/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
   const isConnected = mongoose.connection.readyState === 1;
   res.status(isConnected ? 200 : 503).json({
     status: isConnected ? 'ok' : 'connecting',
@@ -88,16 +101,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Support both /SkillSwap-Campus/api and /api seamlessly
-app.use((req, res, next) => {
-  if (req.url.startsWith('/SkillSwap-Campus/api')) {
-    req.url = req.url.replace(/^\/SkillSwap-Campus/, '');
-  }
-  next();
-});
-
 // Database readiness guard for API routes (ensures clean 503 JSON if DB is connecting)
-app.use('/api', (req, res, next) => {
+apiRouter.use((req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({
       error: 'Campus database connection is in progress. Please ensure your IP address is whitelisted in MongoDB Atlas: https://www.mongodb.com/docs/atlas/security-whitelist/'
@@ -106,22 +111,66 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Mount API routes
-app.use('/api/photos', photosRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/me', meRoutes);
-app.use('/api/students', studentsRoutes);
-app.use('/api/skills', skillsRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/connections', connectionsRoutes);
-app.use('/api/messages', messagesRoutes);
-app.use('/api/sessions', sessionsRoutes);
+// Mount API resource routes
+apiRouter.use('/photos', photosRoutes);
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/me', meRoutes);
+apiRouter.use('/students', studentsRoutes);
+apiRouter.use('/skills', skillsRoutes);
+apiRouter.use('/stats', statsRoutes);
+apiRouter.use('/connections', connectionsRoutes);
+apiRouter.use('/messages', messagesRoutes);
+apiRouter.use('/sessions', sessionsRoutes);
 
 // 404 handler for unmatched API routes (ensures JSON response instead of HTML)
-app.use('/api', (req, res) => {
+apiRouter.use((req, res) => {
   return res.status(404).json({
     error: `API endpoint not found: ${req.method} ${req.originalUrl}`
   });
+});
+
+// Mount unified API router at both /api and /SkillSwap-Campus/api
+app.use('/api', apiRouter);
+app.use('/SkillSwap-Campus/api', apiRouter);
+
+// Production static file serving & SPA fallback
+// Redirect root / to /SkillSwap-Campus/
+app.get('/', (req, res) => {
+  res.redirect(302, '/SkillSwap-Campus/');
+});
+
+// Favicon shortcut
+app.get('/favicon.svg', (req, res) => {
+  const favPath = path.join(distPath, 'favicon.svg');
+  if (fs.existsSync(favPath)) {
+    return res.sendFile(favPath);
+  }
+  res.status(404).end();
+});
+
+// Serve static assets from the built Vite dist directory at /SkillSwap-Campus/
+app.use(
+  '/SkillSwap-Campus',
+  express.static(distPath, {
+    index: 'index.html',
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0
+  })
+);
+
+// SPA fallback for /SkillSwap-Campus/ and any subpaths (e.g. /SkillSwap-Campus/discover)
+app.get(/^\/SkillSwap-Campus(?:\/.*)?$/, (req, res, next) => {
+  if (req.originalUrl.startsWith('/SkillSwap-Campus/api') || req.originalUrl.startsWith('/api')) {
+    return next();
+  }
+  // If a request has a file extension (e.g. missing .js, .css, .png), return 404 instead of index.html
+  if (path.extname(req.path)) {
+    return res.status(404).send('Asset not found');
+  }
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return res.status(404).send('SkillSwap Campus dist not found. Please run npm run build.');
 });
 
 // Centralized Express error handler (guarantees valid JSON on unexpected errors)
