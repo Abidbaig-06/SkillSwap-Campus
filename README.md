@@ -1,4 +1,4 @@
-# SkillSwap Campus 🎓✨
+# SkillSwap Campus 
 
 A modern, minimal peer-to-peer skill-sharing platform designed for college students to discover what skills their peers can teach, showcase what they want to learn, and connect with learning partners across departments.
 
@@ -6,7 +6,7 @@ A modern, minimal peer-to-peer skill-sharing platform designed for college stude
 
 ---
 
-## 🌟 Features
+##  Features
 
 - **Peer Discovery & Directory**: Search students by name, department, skill to learn, or skill to teach. Filter by year, department, and availability.
 - **Minimal Black & White Visual Identity**: Crafted with soft glassmorphism, frosted surfaces, refined typography, and subtle micro-interactions.
@@ -19,7 +19,7 @@ A modern, minimal peer-to-peer skill-sharing platform designed for college stude
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Framework**: React 19 + Vite
 - **Icons**: Lucide React
@@ -28,7 +28,7 @@ A modern, minimal peer-to-peer skill-sharing platform designed for college stude
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -60,7 +60,7 @@ npm run build
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 src/
@@ -74,6 +74,6 @@ src/
 
 ---
 
-## 📄 License
+##  License
 
 This project is open source and available under the [MIT License](LICENSE).
